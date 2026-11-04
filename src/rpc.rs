@@ -90,10 +90,11 @@ pub fn serve<R: BufRead, W: Write>(
 ) -> std::io::Result<()> {
     for line in reader.lines() {
         let line = line?;
+        let line = line.trim_start_matches('\u{feff}');
         if line.trim().is_empty() {
             continue;
         }
-        let reply = match serde_json::from_str::<Value>(&line) {
+        let reply = match serde_json::from_str::<Value>(line) {
             Ok(msg) => handle(server, &msg),
             Err(_) => Some(error(Value::Null, -32700, "parse error")),
         };

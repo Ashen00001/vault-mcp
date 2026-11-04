@@ -525,3 +525,14 @@ fn bad_input_gets_protocol_errors() {
     assert_eq!(lines[1]["error"]["code"], -32602);
     assert_eq!(lines[2]["result"]["protocolVersion"], "2025-06-18");
 }
+
+#[test]
+fn leading_bom_on_input_is_ignored() {
+    let f = fixture();
+    let mut s = server(&f, 12000);
+    let mut out = Vec::new();
+    let input = "\u{feff}{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}\n";
+    rpc::serve(&mut s, Cursor::new(input), &mut out).unwrap();
+    let v: Value = serde_json::from_slice(&out).unwrap();
+    assert_eq!(v["id"], 1);
+}
